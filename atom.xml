@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://j-j-b-b.github.io/</id>
     <title>without_milk</title>
-    <updated>2022-05-12T04:20:52.235Z</updated>
+    <updated>2022-05-12T13:20:51.872Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://j-j-b-b.github.io/"/>
     <link rel="self" href="https://j-j-b-b.github.io/atom.xml"/>
@@ -43,6 +43,145 @@
 * @Author without_milk
 */
 </code></pre>
+<h2 id="标识符和关键字">标识符和关键字</h2>
+<h3 id="标识符">标识符</h3>
+<p>类名、变量名、方法名都被称为标识符。</p>
+<ul>
+<li>
+<p>标识符都以字母、美元符、下划线开始</p>
+</li>
+<li>
+<p>首字符开始后可以是字母、美元符、下划线、数字</p>
+</li>
+</ul>
+<h2 id="数据类型">数据类型</h2>
+<h3 id="基本数据类型">基本数据类型</h3>
+<p>数值类型</p>
+<blockquote>
+<p>整数类型</p>
+<ul>
+<li>byte 1</li>
+<li>short 2</li>
+<li>int 4</li>
+<li>long 8</li>
+</ul>
+<p>浮点型</p>
+<ul>
+<li>float 4</li>
+<li>double 8</li>
+</ul>
+<p>字符型</p>
+<ul>
+<li>char 2</li>
+</ul>
+</blockquote>
+<p>boolean类型</p>
+<blockquote>
+<p>占1位 只有true和false</p>
+</blockquote>
+<h3 id="引用数据类型">引用数据类型</h3>
+<blockquote>
+<p>类</p>
+<p>接口</p>
+<p>数组</p>
+</blockquote>
+<pre><code class="language-java">int num1 = 10;
+long num2 = 30L;
+float num3 = 5.1F;
+double num4 = 5.6;
+char name = 'A';
+String name1 = &quot;hhh&quot;;
+boolean flag = true;
+</code></pre>
+<h3 id="数据类型拓展">数据类型拓展</h3>
+<p>整数</p>
+<pre><code class="language-java">int i1 = 10; // 十进制
+int i2 = 010;// 八进制
+int i3 = 0x10;// 十六进制
+System.out.println(i1); // 10
+System.out.println(i2); // 8
+System.out.println(i3); // 16
+</code></pre>
+<p>浮点数</p>
+<pre><code class="language-java">float f = 0.1f;
+double d = 1.0/10;
+System.out.println(f == d); // false
+</code></pre>
+<blockquote>
+<p>最好避免使用浮点数进行比较</p>
+</blockquote>
+<p>字符</p>
+<pre><code class="language-java">char c1 = 'a';
+char c2 = '中';
+char c3 = '\u0061';
+System.out.println(c1); // a
+System.out.println((int)c1); // 97
+System.out.println(c2); // 中
+System.out.println((int)c2); // 20013
+System.out.println(c3); // a
+System.out.println((int)c3); // 97
+</code></pre>
+<blockquote>
+<p>字符的本质还是数字</p>
+<p>Unicode 编码  2 字节 长度：0 - 65536</p>
+</blockquote>
+<pre><code class="language-java">String sa = new String(&quot;hello&quot;);
+String sb = new String(&quot;hello&quot;);
+String sc = &quot;hello&quot;;
+String sd = &quot;hello&quot;;
+System.out.println(sa == sb); // false
+System.out.println(sc == sd); // true
+</code></pre>
+<p>布尔值</p>
+<pre><code class="language-java">boolean flag = true;
+if(flag){
+    pass;
+}
+</code></pre>
+<blockquote>
+<p>less is more!</p>
+</blockquote>
+<h2 id="类型转换">类型转换</h2>
+<blockquote>
+<p>低 -----------------------------------------------------&gt; 高</p>
+<p>byte short char -&gt; int -&gt; long -&gt; float -&gt; double</p>
+</blockquote>
+<h3 id="内存溢出">内存溢出</h3>
+<pre><code class="language-java">int i = 128;
+byte b = (byte) i; // 内存溢出
+System.out.println(b); // -128
+</code></pre>
+<blockquote>
+<ul>
+<li>从高到底 强制转换（易内存溢出) (类型)变量名</li>
+<li>从低到高 自动转换</li>
+</ul>
+</blockquote>
+<ol>
+<li>不能对布尔值进行转换</li>
+<li>不能把对象类型转换为不相干的类型</li>
+<li>把高转低时强制转换</li>
+<li>转换时候可能存在内存溢出或者精度问题</li>
+</ol>
+<pre><code class="language-java">System.out.println((int)23.7); // 23
+System.out.println((int)-45.3f); // -45
+</code></pre>
+<p>自动转换示例代码</p>
+<pre><code class="language-java">char c = 'a';
+int d = c+1; // 97+1
+System.out.println(d); // 98
+System.out.println((char)d); // b
+</code></pre>
+<h3 id="操作较大数">操作较大数</h3>
+<pre><code class="language-java">int money = 10_0000_0000;
+int year = 20;
+int total = year*money
+System.out.println(money); // 1000000000
+System.out.println(total); // -1474836480 溢出
+</code></pre>
+<blockquote>
+<p>数字之间可以使用下划线 不影响</p>
+</blockquote>
 ]]></content>
     </entry>
     <entry>
