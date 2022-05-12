@@ -4,7 +4,7 @@
     
 <meta charset="utf-8" >
 
-<title>文章归档 | without_milk</title>
+<title>Java | without_milk</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -13,13 +13,25 @@
 <link rel="stylesheet" href="https://j-j-b-b.github.io//styles/main.css">
 
 
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
 
 <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 
 
-    <meta name="description" content="温故而知新">
+    <meta name="description" content="资料
+遇见狂神说的个人空间_哔哩哔哩_bilibili
+hello world
+public class Main {
+    public static void main(String[] args) {
+        System...." />
+    <meta name="keywords" content="java基础" />
   </head>
   <body>
     <div id="app" class="main">
@@ -93,50 +105,69 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          
+          <div class="post-detail">
+            <h2 class="post-title">Java</h2>
+            <div class="post-date">2022-05-11</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="资料">资料</h1>
+<p><a href="https://space.bilibili.com/95256449/channel/seriesdetail?sid=393820&amp;ctype=0">遇见狂神说的个人空间_哔哩哔哩_bilibili</a></p>
+<h1 id="hello-world">hello world</h1>
+<pre><code class="language-java">public class Main {
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello world!&quot;);
+    }
+}
+</code></pre>
+<h1 id="java-基础">java 基础</h1>
+<h2 id="注释">注释</h2>
+<h3 id="单行注释">单行注释</h3>
+<pre><code class="language-java">// 单行注释
+</code></pre>
+<h3 id="多行注释">多行注释</h3>
+<pre><code class="language-java">/*多行注释
+多行注释
+多行注释
+多行注释
+*/
+</code></pre>
+<h3 id="文档注释">文档注释</h3>
+<pre><code class="language-java">/**
+* @Description HelloWorld
+* @Author without_milk
+*/
+</code></pre>
 
-          <h2 class="archives-title">文章归档</h2>
-          <div class="archives-container">
+            </div>
             
-              <h2 class="year" data-aos="fade-in" data-aos-delay="500">2022</h2>
+              <div class="tag-container">
+                
+                  <a href="https://j-j-b-b.github.io/tag/kQroRzivb/" class="tag">
+                    java基础
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://j-j-b-b.github.io/post/python-bing-fa/">
+                  <h3 class="post-title">
+                    Python并发
+                  </h3>
+                </a>
+              </div>
+            
+
+            
               
-                
-                  <article class="post">
-                    <a href="https://j-j-b-b.github.io/post/java/">
-                      <h2 class="post-title">
-                        Java
-                      </h2>
-                    </a>
-                  </article>
-                
+                <div id="gitalk-container" data-aos="fade-in"></div>
               
-                
-                  <article class="post">
-                    <a href="https://j-j-b-b.github.io/post/python-bing-fa/">
-                      <h2 class="post-title">
-                        Python并发
-                      </h2>
-                    </a>
-                  </article>
-                
-              
-                
-                  <article class="post">
-                    <a href="https://j-j-b-b.github.io/post/hello/">
-                      <h2 class="post-title">
-                        hello
-                      </h2>
-                    </a>
-                  </article>
-                
+
               
             
+
           </div>
-
-          <div class="pagination-container">
-  
-  
-</div>
 
         </div>
       </div>
@@ -162,6 +193,29 @@ var app = new Vue({
     hljs.initHighlightingOnLoad()
   </script>
 
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '9a17f8866b425882bb13',
+        clientSecret: '6d39cd3760e10f894d724b88ca89585e6b4df85e',
+        repo: 'j-j-b-b.github.io',
+        owner: 'j-j-b-b',
+        admin: ['j-j-b-b'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 

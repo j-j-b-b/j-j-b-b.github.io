@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://j-j-b-b.github.io/</id>
     <title>without_milk</title>
-    <updated>2022-05-10T15:29:28.227Z</updated>
+    <updated>2022-05-12T04:20:52.235Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://j-j-b-b.github.io/"/>
     <link rel="self" href="https://j-j-b-b.github.io/atom.xml"/>
@@ -11,13 +11,47 @@
     <icon>https://j-j-b-b.github.io/favicon.ico</icon>
     <rights>All rights reserved 2022, without_milk</rights>
     <entry>
+        <title type="html"><![CDATA[Java]]></title>
+        <id>https://j-j-b-b.github.io/post/java/</id>
+        <link href="https://j-j-b-b.github.io/post/java/">
+        </link>
+        <updated>2022-05-11T02:10:37.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="资料">资料</h1>
+<p><a href="https://space.bilibili.com/95256449/channel/seriesdetail?sid=393820&amp;ctype=0">遇见狂神说的个人空间_哔哩哔哩_bilibili</a></p>
+<h1 id="hello-world">hello world</h1>
+<pre><code class="language-java">public class Main {
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello world!&quot;);
+    }
+}
+</code></pre>
+<h1 id="java-基础">java 基础</h1>
+<h2 id="注释">注释</h2>
+<h3 id="单行注释">单行注释</h3>
+<pre><code class="language-java">// 单行注释
+</code></pre>
+<h3 id="多行注释">多行注释</h3>
+<pre><code class="language-java">/*多行注释
+多行注释
+多行注释
+多行注释
+*/
+</code></pre>
+<h3 id="文档注释">文档注释</h3>
+<pre><code class="language-java">/**
+* @Description HelloWorld
+* @Author without_milk
+*/
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Python并发]]></title>
         <id>https://j-j-b-b.github.io/post/python-bing-fa/</id>
         <link href="https://j-j-b-b.github.io/post/python-bing-fa/">
         </link>
         <updated>2022-05-10T15:06:23.000Z</updated>
-        <content type="html"><![CDATA[<p>[toc]</p>
-<h1 id="1-多任务">1. 多任务</h1>
+        <content type="html"><![CDATA[<h1 id="1-多任务">1. 多任务</h1>
 <h2 id="11-多任务的概念">1.1 多任务的概念</h2>
 <p>多任务是指在<strong>同一时间</strong>内执行<strong>多个任务</strong></p>
 <h2 id="12-多任务的表现形式">1.2 多任务的表现形式</h2>
