@@ -1,22 +1,120 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://j-j-b-b.github.io/</id>
-    <title>without_milk</title>
-    <updated>2022-05-14T07:36:49.043Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://j-j-b-b.github.io/"/>
-    <link rel="self" href="https://j-j-b-b.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
-    <logo>https://j-j-b-b.github.io/images/avatar.png</logo>
-    <icon>https://j-j-b-b.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2022, without_milk</rights>
-    <entry>
-        <title type="html"><![CDATA[TensorFlow 2.0]]></title>
-        <id>https://j-j-b-b.github.io/post/tensorflow-20/</id>
-        <link href="https://j-j-b-b.github.io/post/tensorflow-20/">
-        </link>
-        <updated>2022-05-14T07:32:59.000Z</updated>
-        <content type="html"><![CDATA[<p>路线</p>
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>TensorFlow 2.0 | without_milk</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://j-j-b-b.github.io//favicon.ico?v=1652513807071">
+<link rel="stylesheet" href="https://j-j-b-b.github.io//styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="路线
+
+ML的sklearn掌握
+DL的tensorflow2.0掌握基本使用方法和调参方法（此时可以去试试行人识别）
+RL的话，可以延续TF的学习路线，用TF-Agent表示代理，做简单的训练
+
+资料
+tensorflow
+[toc]
+初..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://j-j-b-b.github.io/">
+        <img src="https://j-j-b-b.github.io//images/avatar.png?v=1652513807071" class="site-logo">
+        <h1 class="site-title">without_milk</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="https://github.com/j-j-b-b" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com" target="_blank">GitHub pages</a> | <a class="rss" href="https://j-j-b-b.github.io//atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">TensorFlow 2.0</h2>
+            <div class="post-date">2022-05-14</div>
+            
+            <div class="post-content" v-pre>
+              <p>路线</p>
 <ol>
 <li>ML的sklearn掌握</li>
 <li>DL的tensorflow2.0掌握基本使用方法和调参方法（此时可以去试试行人识别）</li>
@@ -401,630 +499,80 @@ raw_train_ds = tf.keras.preprocessing.text_dataset_from_directory(
     subset='training', 
     seed=seed)
 </code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Java]]></title>
-        <id>https://j-j-b-b.github.io/post/java/</id>
-        <link href="https://j-j-b-b.github.io/post/java/">
-        </link>
-        <updated>2022-05-11T02:10:37.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="资料">资料</h1>
-<p><a href="https://space.bilibili.com/95256449/channel/seriesdetail?sid=393820&amp;ctype=0">遇见狂神说的个人空间_哔哩哔哩_bilibili</a></p>
-<h1 id="hello-world">hello world</h1>
-<pre><code class="language-java">public class Main {
-    public static void main(String[] args) {
-        System.out.println(&quot;Hello world!&quot;);
-    }
-}
-</code></pre>
-<h1 id="java-基础">java 基础</h1>
-<h2 id="注释">注释</h2>
-<h3 id="单行注释">单行注释</h3>
-<pre><code class="language-java">// 单行注释
-</code></pre>
-<h3 id="多行注释">多行注释</h3>
-<pre><code class="language-java">/*多行注释
-多行注释
-多行注释
-多行注释
-*/
-</code></pre>
-<h3 id="文档注释">文档注释</h3>
-<pre><code class="language-java">/**
-* @Description HelloWorld
-* @Author without_milk
-*/
-</code></pre>
-<h2 id="标识符和关键字">标识符和关键字</h2>
-<h3 id="标识符">标识符</h3>
-<p>类名、变量名、方法名都被称为标识符。</p>
-<ul>
-<li>
-<p>标识符都以字母、美元符、下划线开始</p>
-</li>
-<li>
-<p>首字符开始后可以是字母、美元符、下划线、数字</p>
-</li>
-</ul>
-<h2 id="数据类型">数据类型</h2>
-<h3 id="基本数据类型">基本数据类型</h3>
-<p>数值类型</p>
-<blockquote>
-<p>整数类型</p>
-<ul>
-<li>byte 1</li>
-<li>short 2</li>
-<li>int 4</li>
-<li>long 8</li>
-</ul>
-<p>浮点型</p>
-<ul>
-<li>float 4</li>
-<li>double 8</li>
-</ul>
-<p>字符型</p>
-<ul>
-<li>char 2</li>
-</ul>
-</blockquote>
-<p>boolean类型</p>
-<blockquote>
-<p>占1位 只有true和false</p>
-</blockquote>
-<h3 id="引用数据类型">引用数据类型</h3>
-<blockquote>
-<p>类</p>
-<p>接口</p>
-<p>数组</p>
-</blockquote>
-<pre><code class="language-java">int num1 = 10;
-long num2 = 30L;
-float num3 = 5.1F;
-double num4 = 5.6;
-char name = 'A';
-String name1 = &quot;hhh&quot;;
-boolean flag = true;
-</code></pre>
-<h3 id="数据类型拓展">数据类型拓展</h3>
-<p>整数</p>
-<pre><code class="language-java">int i1 = 10; // 十进制
-int i2 = 010;// 八进制
-int i3 = 0x10;// 十六进制
-System.out.println(i1); // 10
-System.out.println(i2); // 8
-System.out.println(i3); // 16
-</code></pre>
-<p>浮点数</p>
-<pre><code class="language-java">float f = 0.1f;
-double d = 1.0/10;
-System.out.println(f == d); // false
-</code></pre>
-<blockquote>
-<p>最好避免使用浮点数进行比较</p>
-</blockquote>
-<p>字符</p>
-<pre><code class="language-java">char c1 = 'a';
-char c2 = '中';
-char c3 = '\u0061';
-System.out.println(c1); // a
-System.out.println((int)c1); // 97
-System.out.println(c2); // 中
-System.out.println((int)c2); // 20013
-System.out.println(c3); // a
-System.out.println((int)c3); // 97
-</code></pre>
-<blockquote>
-<p>字符的本质还是数字</p>
-<p>Unicode 编码  2 字节 长度：0 - 65536</p>
-</blockquote>
-<pre><code class="language-java">String sa = new String(&quot;hello&quot;);
-String sb = new String(&quot;hello&quot;);
-String sc = &quot;hello&quot;;
-String sd = &quot;hello&quot;;
-System.out.println(sa == sb); // false
-System.out.println(sc == sd); // true
-</code></pre>
-<p>布尔值</p>
-<pre><code class="language-java">boolean flag = true;
-if(flag){
-    pass;
-}
-</code></pre>
-<blockquote>
-<p>less is more!</p>
-</blockquote>
-<h2 id="类型转换">类型转换</h2>
-<blockquote>
-<p>低 -----------------------------------------------------&gt; 高</p>
-<p>byte short char -&gt; int -&gt; long -&gt; float -&gt; double</p>
-</blockquote>
-<h3 id="内存溢出">内存溢出</h3>
-<pre><code class="language-java">int i = 128;
-byte b = (byte) i; // 内存溢出
-System.out.println(b); // -128
-</code></pre>
-<blockquote>
-<ul>
-<li>从高到底 强制转换（易内存溢出) (类型)变量名</li>
-<li>从低到高 自动转换</li>
-</ul>
-</blockquote>
-<ol>
-<li>不能对布尔值进行转换</li>
-<li>不能把对象类型转换为不相干的类型</li>
-<li>把高转低时强制转换</li>
-<li>转换时候可能存在内存溢出或者精度问题</li>
-</ol>
-<pre><code class="language-java">System.out.println((int)23.7); // 23
-System.out.println((int)-45.3f); // -45
-</code></pre>
-<p>自动转换示例代码</p>
-<pre><code class="language-java">char c = 'a';
-int d = c+1; // 97+1
-System.out.println(d); // 98
-System.out.println((char)d); // b
-</code></pre>
-<h3 id="操作较大数">操作较大数</h3>
-<pre><code class="language-java">int money = 10_0000_0000;
-int year = 20;
-int total = year*money
-System.out.println(money); // 1000000000
-System.out.println(total); // -1474836480 溢出
-</code></pre>
-<blockquote>
-<p>数字之间可以使用下划线 不影响</p>
-</blockquote>
-<pre><code class="language-java">int money = 10_0000_0000;
-int years = 20;
-long total1 = money*years; // 右边是int 转换前已经溢出了
-long total2 = money*((long)years); // 先把一个数转换为long
-System.out.println(total1); // -1474836480
-System.out.println(total2); // 20000000000
-</code></pre>
-<h2 id="变量-常量-作用域">变量、常量、作用域</h2>
-<p>Java是强类型语言，变量必须声明类型</p>
-<pre><code class="language-java">type varName [=value] [{,varName[=value]}];
-// 数据类型 变量名 = 值;
-// 可以用逗号隔开来声明多个同类型变量
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Python并发]]></title>
-        <id>https://j-j-b-b.github.io/post/python-bing-fa/</id>
-        <link href="https://j-j-b-b.github.io/post/python-bing-fa/">
-        </link>
-        <updated>2022-05-10T15:06:23.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="1-多任务">1. 多任务</h1>
-<h2 id="11-多任务的概念">1.1 多任务的概念</h2>
-<p>多任务是指在<strong>同一时间</strong>内执行<strong>多个任务</strong></p>
-<h2 id="12-多任务的表现形式">1.2 多任务的表现形式</h2>
-<ul>
-<li>并发</li>
-<li>并行</li>
-</ul>
-<h2 id="13-并发">1.3 并发</h2>
-<p>在一段时间内<strong>交替</strong>去执行多个任务</p>
-<p>任务数量大于 CPU 的核心数</p>
-<h2 id="14-并行">1.4 并行</h2>
-<p>指在一段时间内<strong>真正的同时一起</strong>执行<strong>多个任务</strong></p>
-<p>任务数量小于或等于CPU的核心数</p>
-<h1 id="2-进程">2. 进程</h1>
-<h2 id="21-进程的介绍">2.1 进程的介绍</h2>
-<h3 id="211-程序中实现多任务的方式">2.1.1 程序中实现多任务的方式</h3>
-<p>在 Python 中，使用多进程完成</p>
-<h3 id="212-进程的概念">2.1.2 进程的概念</h3>
-<p>是操作系统进行资源分配和调度运行的基本单元</p>
-<h3 id="213-多进程的作用">2.1.3 多进程的作用</h3>
-<h2 id="22-多进程完成多任务">2.2 多进程完成多任务</h2>
-<h3 id="221-进程的创建步骤">2.2.1 进程的创建步骤</h3>
-<p>1.导入包</p>
-<pre><code class="language-python">import multiprocessing
-</code></pre>
-<p>2.通过进程类创建进程对象</p>
-<pre><code class="language-python">进程对象 = multiprocessing.Process()
-</code></pre>
-<p>3.启动进程执行任务</p>
-<pre><code class="language-python">进程对象.start()
-</code></pre>
-<h3 id="222-通过进程类创建进程对象">2.2.2 通过进程类创建进程对象</h3>
-<pre><code class="language-python">进程对象 = multiprocessing.Process(target = 任务名)
-</code></pre>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>target</td>
-<td>执行的目标任务名（函数名）</td>
-</tr>
-<tr>
-<td>name</td>
-<td>进程名</td>
-</tr>
-<tr>
-<td>group</td>
-<td>进程组</td>
-</tr>
-</tbody>
-</table>
-<h3 id="223-进程创建与启动代码">2.2.3 进程创建与启动代码</h3>
-<pre><code class="language-python"># 创建子进程
-sing_process = multiprocessing.Process(target = sing)
-dance_process = multiprocessing.Process(target = dance)
 
-# 启动进程
-sing_process.start()
-dance_process.start()
-</code></pre>
-<h3 id="224-示例程序">2.2.4 示例程序</h3>
-<pre><code class="language-python">import multiprocessing
-import time
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://j-j-b-b.github.io/post/java/">
+                  <h3 class="post-title">
+                    Java
+                  </h3>
+                </a>
+              </div>
+            
 
-def sing():
-    for i in range(3):
-        print('sing')
-        time.sleep(0.5)
-def dance():
-    for i in range(3):
-        print('dance')
-        time.sleep(0.5)
-if __name__ == '__main__':
-    # 创建子进程
-    sing_process = multiprocessing.Process(target = sing)
-    dance_process = multiprocessing.Process(target = dance)
-    # 启动进程
-    sing_process.start()
-    dance_process.start()
-</code></pre>
-<h2 id="23-进程执行带有参数的任务">2.3 进程执行带有参数的任务</h2>
-<h3 id="231-进程执行带有参数的任务">2.3.1 进程执行带有参数的任务</h3>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>args</td>
-<td>以元组的方式</td>
-</tr>
-<tr>
-<td>kwargs</td>
-<td>以字典的方式</td>
-</tr>
-</tbody>
-</table>
-<h3 id="232-args-参数的使用">2.3.2 args 参数的使用</h3>
-<pre><code class="language-python">sing_process = multiprocessing.Process(target = sing,args = (3,))
-</code></pre>
-<h3 id="233-kwargs-参数的使用">2.3.3 kwargs 参数的使用</h3>
-<pre><code class="language-python">sing_process = multiprocessing.Process(target = sing,kwargs = {&quot;num&quot;:3})
-</code></pre>
-<h3 id="234-示例代码">2.3.4 示例代码</h3>
-<pre><code class="language-python">import multiprocessing
-import time
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
 
-def sing(sum,name):
-    for i in range(sum):
-        print(name)
-        time.sleep(0.5)
-def dance(sum,name):
-    for i in range(sum):
-        print(name)
-        time.sleep(0.5)
-if __name__ == '__main__':
-    # 创建子进程
-    sing_process = multiprocessing.Process(target = sing,args = (3,&quot;sing&quot;))
-    dance_process = multiprocessing.Process(target = dance,kwargs = {&quot;sum&quot;:3,&quot;name&quot;:&quot;dance&quot;})
-    # 启动进程
-    sing_process.start()
-    dance_process.start()
-</code></pre>
-<h2 id="24-进程编号">2.4 进程编号</h2>
-<p>进程编号作用：区分进程，方便管理</p>
-<p>获取进程编号的两种方式</p>
-<p>1.获取当前进程编号</p>
-<pre><code class="language-python">os.getpid()
-</code></pre>
-<p>2.获取当前父进程编号</p>
-<pre><code class="language-python">os.getppid()
-</code></pre>
-<h3 id="241-osgetpid-的使用">2.4.1 os.getpid() 的使用</h3>
-<pre><code class="language-python">import os
-pid = os.getpid()
-print(pid)
-</code></pre>
-<h3 id="242-osgetppid-的使用">2.4.2 os.getppid() 的使用</h3>
-<pre><code class="language-python">def work():
-    # 获取当前进程的编号
-    print(&quot;work进程编号：&quot;,os.getpid())
-    # 获取父进程的编号
-    print(&quot;work父进程的编号：&quot;,os.getppid())
-</code></pre>
-<h2 id="25-进程的注意点">2.5 进程的注意点</h2>
-<h3 id="251-主进程会等待所有的子进程执行结束再结束">2.5.1 主进程会等待所有的子进程执行结束再结束</h3>
-<p>示例代码</p>
-<pre><code class="language-python">import multiprocessing
-import time
-def work():
-    for i in range(10):
-        print(&quot;进行中&quot;)
-        time.sleep(0.2)
-if __name__ == &quot;__main__&quot;:
-    work_process = multiprocessing.Process(target = work)
-    work_process.start()
-    time.sleep(1)
-    print(&quot;主进程结束&quot;)
-</code></pre>
-<p>输出</p>
-<pre><code class="language-python">进行中
-进行中
-进行中
-进行中
-进行中
-主进程结束
-进行中
-进行中
-进行中
-进行中
-进行中
-</code></pre>
-<h3 id="252-设置守护主进程">2.5.2 设置守护主进程</h3>
-<p>设置守护主进程方式：</p>
-<p>​	子进程对象.daemon = True</p>
-<p>示例代码</p>
-<pre><code class="language-python">import multiprocessing
-import time
-def work():
-    for i in range(10):
-        print(&quot;进行中&quot;)
-        time.sleep(0.2)
-if __name__ == &quot;__main__&quot;:
-    # 创子进程
-    work_process = multiprocessing.Process(target = work)
-    # 设置守护主进程，主进程退出直接销毁，不再执行子进程
-    work_process.daemon = True
-    work_process.start()
-    time.sleep(1)
-    print(&quot;主进程结束&quot;)
-</code></pre>
-<p>输出</p>
-<pre><code class="language-python">进行中
-进行中
-进行中
-进行中
-进行中
-主进程结束
-</code></pre>
-<p>设置守护线程的目的：</p>
-<p>​	<strong>主进程退出 子进程销毁</strong></p>
-<h2 id="26-高并发-copy-器">2.6 高并发 copy 器</h2>
-<h3 id="261-需求分析">2.6.1 需求分析</h3>
-<h4 id="2611-定义源文件夹目录和目标文件夹目录">2.6.1.1 定义源文件夹目录和目标文件夹目录</h4>
-<pre><code class="language-python">source_dir = &quot;./源文件&quot;
-dest_dir = &quot;./目标文件&quot;
-</code></pre>
-<h4 id="2612-创建目标文件夹">2.6.1.2 创建目标文件夹</h4>
-<pre><code class="language-python">try:
-    # 创建目标文件夹目录
-    os.mkdir(dest_dir)
-except:
-    print(&quot;文件夹已存在&quot;)
-</code></pre>
-<h4 id="2613-通过-oslistdir-获取源目录中的文件列表">2.6.1.3 通过 os.listdir 获取源目录中的文件列表</h4>
-<pre><code class="language-python">file_list = os.listdir(source_dir)
-print(file_list)
-</code></pre>
-<h4 id="2614-遍历文件-定义拷贝函数">2.6.1.4 遍历文件 定义拷贝函数</h4>
-<pre><code class="language-python">for file_name in file_list:
-    copy_work(file_name,source_dir,dest_dir)
-</code></pre>
-<blockquote>
-<p>采用多线程</p>
-<pre><code class="language-python">for file_name in file_list:
-# copy_work(file_name,source_dir,dest_dir)
-sub_process = multiprocessing.Process(target = copy_work,args = (file_name,source_dir,dest_dir))
-sub_process.start()
-</code></pre>
-</blockquote>
-<h3 id="262-文件拷贝函数实现">2.6.2 文件拷贝函数实现</h3>
-<h4 id="2621-拼接路径">2.6.2.1 拼接路径</h4>
-<pre><code class="language-python">def copy_work(file_name,source_dir,dest_dir):
-    # 拼接路径
-    source_path = source_dir + &quot;//&quot; + file_name
-    dest_path = dest_dir + &quot;//&quot; + filr_name
-</code></pre>
-<h4 id="2622-打开源文件-创建目标文件">2.6.2.2 打开源文件 创建目标文件</h4>
-<pre><code class="language-python">def copy_work(file_name,source_dir,dest_dir):
-    # 拼接路径
-    source_path = source_dir + &quot;//&quot; + file_name
-    dest_path = dest_dir + &quot;//&quot; + file_name
-	print(source_path,&quot;---&gt;&quot;,dest_path)
-	# 打开源文件 创建目标文件
-	with open(source_path,&quot;rb&quot;) as source_file:
-        with open(dest_path,&quot;wb&quot;) as dest_file:
-    
-</code></pre>
-<h4 id="2623-读取源文件-写入目标文件夹">2.6.2.3 读取源文件 写入目标文件夹</h4>
-<pre><code class="language-python">def copy_work(file_name,source_dir,dest_dir):
-    # 拼接路径
-    ...
-    # 打开源文件 创建目标文件
-    ...
-    while True:
-        # 循环读取数据
-        file_data = source_file.read(1024)
-        if file_data:
-            # 循环写入
-            dest_file.write(file_data)
-        else:
-            break
-</code></pre>
-<h1 id="3-线程">3. 线程</h1>
-<h2 id="31-线程的介绍">3.1 线程的介绍</h2>
-<h3 id="311-实现多任务的另一种形式">3.1.1 实现多任务的另一种形式</h3>
-<p>多线程实现多任务</p>
-<h3 id="312-为什么使用多线程">3.1.2 为什么使用多线程</h3>
-<p>实现多任务的同时节约资源</p>
-<h3 id="313-多线程的作用">3.1.3 多线程的作用</h3>
-<h2 id="32-多线程完成多任务">3.2 多线程完成多任务</h2>
-<h3 id="321-线程创建步骤">3.2.1 线程创建步骤</h3>
-<ol>
-<li>导入线程模块</li>
-</ol>
-<pre><code class="language-python">import threading
-</code></pre>
-<ol start="2">
-<li>通过线程类创建线程对象</li>
-</ol>
-<pre><code class="language-python">线程对象 = threading.Thread(target = 任务名)
-</code></pre>
-<ol start="3">
-<li>启动线程</li>
-</ol>
-<pre><code class="language-python">线程对象.start()
-</code></pre>
-<h3 id="322-通过线程类创建线程对象">3.2.2 通过线程类创建线程对象</h3>
-<p>线程对象 = threading.Thread(target = 任务名)</p>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>target</td>
-<td>执行的目标任务名</td>
-</tr>
-<tr>
-<td>name</td>
-<td>线程名</td>
-</tr>
-<tr>
-<td>group</td>
-<td>线程组</td>
-</tr>
-</tbody>
-</table>
-<h3 id="323-线程创建与启动的代码">3.2.3 线程创建与启动的代码</h3>
-<pre><code class="language-python"># 创建子线程
-sing_thread = threading.Thread(target = sing)
-# 创建子进程
-dance_thread = threading.Thread(target = dance)
-# 启动线程
-sing_thread.start()
-dance_thread.start()
-</code></pre>
-<h2 id="33-线程执行带有参数的任务">3.3 线程执行带有参数的任务</h2>
-<h3 id="331-线程执行带有参数的任务">3.3.1 线程执行带有参数的任务</h3>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>args</td>
-<td>以元组方式传参</td>
-</tr>
-<tr>
-<td>kwargs</td>
-<td>以字典方式传参</td>
-</tr>
-</tbody>
-</table>
-<h2 id="34-主线程与子线程的结束顺序">3.4 主线程与子线程的结束顺序</h2>
-<p>主线程会等待所以子线程执行结束再结束</p>
-<h3 id="341-设置守护主线程">3.4.1 设置守护主线程</h3>
-<p>主线程结束，子线程自动销毁</p>
-<pre><code class="language-python"># 方法一
-work_thread = threading.Thread(target = work,daemon = True)
-# 方法二
-work_thread.setDaemon(True)
-work_thread.start()
-</code></pre>
-<h2 id="35-线程间的执行顺序">3.5 线程间的执行顺序</h2>
-<p>无序，由CPU调度决定某个线程先执行</p>
-<h2 id="36-线程和进程对比">3.6 线程和进程对比</h2>
-<h3 id="361-关系对比">3.6.1 关系对比</h3>
-<ol>
-<li>线程是依附在进程里面的，没有进程就没有线程</li>
-<li>一个进程默认提供一条线程，进程可以创建多个线程</li>
-</ol>
-<h3 id="362-区别对比">3.6.2 区别对比</h3>
-<ol>
-<li>创建进程的资源开销要比创建线程的资源开销要大</li>
-<li>进程是操作系统资源分配的基本单位，线程是CPU调度的基本单位</li>
-<li>线程不能够独立执行，必须依存在进程中</li>
-</ol>
-<h3 id="363-优缺点对比">3.6.3 优缺点对比</h3>
-<p>进程</p>
-<ul>
-<li>优点：可以用多核</li>
-<li>缺点：资源开销大</li>
-</ul>
-<p>线程</p>
-<ul>
-<li>优点：资源开销小</li>
-<li>缺点：不可用多核</li>
-</ul>
-<h2 id="37-线程与进程用法一致">3.7 线程与进程用法一致</h2>
-<pre><code class="language-python">import os
-import threading
-def copy_file(file_name, source_dir, dest_dir):
-    # 1 拼接源文件路径和目标文件路径
-    source_path = source_dir + '\\' + file_name
-    dest_path = dest_dir + '\\' + file_name
-    # 2 打开源文件和目标文件
-    with open(source_path, 'rb') as source_file:
-        with open(dest_path, 'wb') as dest_file:
-            # 3 循环读取源文件到目标路径
-            while True:
-                data = source_file.read(1024)
-                if data:
-                    dest_file.write(data)
-                else:
-                    break
-if __name__ == '__main__':
-    # 1 定义源文件夹和目标文件夹
-    source_dir = r'.\\源文件'
-    dest_dir= r'.\\目标文件'
+              
+            
 
-    # 2.创建目标文件夹
-    try:
-        os.mkdir(dest_dir)
-    except:
-        print(&quot;目标文件夹已经存在&quot;)
-    # 3.读取源文件夹的文件列表
-    file_list = os.listdir(source_dir)
-    # 4.遍历文件列表实现拷贝
-    for file_name in file_list:
-        # copy_file(file_name, source_dir, dest_dir)
-        # 5.使用多线程实现多任务拷贝
-        sub_thread = threading.Thread(target=copy_file, args=(file_name, source_dir, dest_dir))
-        sub_thread.start()
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[hello]]></title>
-        <id>https://j-j-b-b.github.io/post/hello/</id>
-        <link href="https://j-j-b-b.github.io/post/hello/">
-        </link>
-        <updated>2022-05-10T14:21:39.000Z</updated>
-        <content type="html"><![CDATA[<p>yyy</p>
-]]></content>
-    </entry>
-</feed>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '9a17f8866b425882bb13',
+        clientSecret: '6d39cd3760e10f894d724b88ca89585e6b4df85e',
+        repo: 'j-j-b-b.github.io',
+        owner: 'j-j-b-b',
+        admin: ['j-j-b-b'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
