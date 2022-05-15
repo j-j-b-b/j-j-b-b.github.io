@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://j-j-b-b.github.io/</id>
     <title>without_milk</title>
-    <updated>2022-05-14T07:36:49.043Z</updated>
+    <updated>2022-05-15T10:43:07.618Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://j-j-b-b.github.io/"/>
     <link rel="self" href="https://j-j-b-b.github.io/atom.xml"/>
@@ -401,6 +401,885 @@ raw_train_ds = tf.keras.preprocessing.text_dataset_from_directory(
     subset='training', 
     seed=seed)
 </code></pre>
+<blockquote>
+<p>Found 25000 files belonging to 2 classes. Using 20000 files for training.</p>
+</blockquote>
+<p>如上所示，训练文件夹中有 25,000 个样本，您将使用其中的 80%（或 20,000 个）进行训练。稍后您将看到，您可以通过将数据集直接传递给 <code>model.fit</code> 来训练模型。如果您不熟悉 <code>tf.data</code>，还可以遍历数据集并打印出一些样本，如下所示。</p>
+<pre><code class="language-python">for text_batch, label_batch in raw_train_ds.take(1):
+  for i in range(3):
+    print(&quot;Review&quot;, text_batch.numpy()[i])
+    print(&quot;Label&quot;, label_batch.numpy()[i])
+</code></pre>
+<p>请注意，评论包含原始文本（带有标点符号和偶尔出现的 HTML 代码，如 <code>&lt;br/&gt;</code>）。我们将在以下部分展示如何处理这些问题。</p>
+<p>标签为 0 或 1。要查看它们与正面和负面电影评论的对应关系，可以查看数据集上的 <code>class_names</code> 属性。</p>
+<pre><code class="language-python">print(&quot;Label 0 corresponds to&quot;, raw_train_ds.class_names[0])
+print(&quot;Label 1 corresponds to&quot;, raw_train_ds.class_names[1])
+</code></pre>
+<blockquote>
+<p>Label 0 corresponds to neg Label 1 corresponds to pos</p>
+</blockquote>
+<p>接下来，您将创建验证数据集和测试数据集。您将使用训练集中剩余的 5,000 条评论进行验证。</p>
+<ul>
+<li>使用 <code>validation_split</code> 和 <code>subset</code> 参数时，请确保要么指定随机种子，要么传递 <code>shuffle=False</code>，这样验证拆分和训练拆分就不会重叠。</li>
+</ul>
+<pre><code class="language-python">raw_val_ds = tf.keras.preprocessing.text_dataset_from_directory(
+    'aclImdb/train', 
+    batch_size=batch_size, 
+    validation_split=0.2, 
+    subset='validation', 
+    seed=seed)
+</code></pre>
+<blockquote>
+<p>Found 25000 files belonging to 2 classes. Using 5000 files for validation.</p>
+</blockquote>
+<pre><code class="language-python">raw_test_ds = tf.keras.preprocessing.text_dataset_from_directory(
+    'aclImdb/test', 
+    batch_size=batch_size)
+</code></pre>
+<ul>
+<li>以下部分中使用的 Preprocessing API 在 TensorFlow 2.3 中是实验性的，可能会发生变更。</li>
+</ul>
+<h3 id="准备用于训练的数据集">准备用于训练的数据集</h3>
+<p>接下来，您将使用有用的 <code>preprocessing.TextVectorization</code> 层对数据进行标准化、词例化和向量化。</p>
+<p>标准化是指对文本进行预处理，通常是移除标点符号或 HTML 元素以简化数据集。词例化是指将字符串分割成词例（例如，通过空格将句子分割成单个单词）。向量化是指将词例转换为数字，以便将它们输入神经网络。所有这些任务都可以通过这个层完成。</p>
+<p>正如您在上面看到的，评论包含各种 HTML 代码，例如 <code>&lt;br /&gt;</code>。<code>TextVectorization</code> 层（默认情况下会将文本转换为小写并去除标点符号，但不会去除 HTML）中的默认标准化程序不会移除这些代码。您将编写一个自定义标准化函数来移除 HTML。</p>
+<ul>
+<li>为了防止<a href="https://developers.google.com/machine-learning/guides/rules-of-ml#training-serving_skew">训练/测试偏差</a>（也称为训练/应用偏差），在训练和测试时间对数据进行相同的预处理非常重要。为此，可以将 <code>TextVectorization</code> 层直接包含在模型中，如本教程后面所示。</li>
+</ul>
+<pre><code class="language-python">def custom_standardization(input_data):
+  lowercase = tf.strings.lower(input_data)
+  stripped_html = tf.strings.regex_replace(lowercase, '&lt;br /&gt;', ' ')
+  return tf.strings.regex_replace(stripped_html,
+                                  '[%s]' % re.escape(string.punctuation),
+                                  '')
+</code></pre>
+<p>接下来，您将创建一个 <code>TextVectorization</code> 层。您将使用该层对我们的数据进行标准化、词例化和向量化。您将 <code>output_mode</code> 设置为 <code>int</code> 以便为每个词例创建唯一的整数索引。</p>
+<p>请注意，您使用的是默认拆分函数，以及您在上面定义的自定义标准化函数。您还将为模型定义一些常量，例如显式的最大 <code>sequence_length</code>，这会使层将序列填充或截断为精确的 <code>sequence_length</code> 值。</p>
+<pre><code class="language-python">max_features = 10000
+sequence_length = 250
+
+vectorize_layer = TextVectorization(
+    standardize=custom_standardization,
+    max_tokens=max_features,
+    output_mode='int',
+    output_sequence_length=sequence_length)
+</code></pre>
+<p>接下来，您将调用 <code>adapt</code> 以使预处理层的状态适合数据集。这会使模型构建字符串到整数的索引。</p>
+<ul>
+<li>在调用时请务必仅使用您的训练数据（使用测试集会泄漏信息）。</li>
+</ul>
+<pre><code class="language-python"># Make a text-only dataset (without labels), then call adapt
+train_text = raw_train_ds.map(lambda x, y: x)
+vectorize_layer.adapt(train_text)
+</code></pre>
+<p>我们来创建一个函数来查看使用该层预处理一些数据的结果。</p>
+<pre><code class="language-python">def vectorize_text(text, label):
+  text = tf.expand_dims(text, -1)
+  return vectorize_layer(text), label
+</code></pre>
+<pre><code class="language-python"># retrieve a batch (of 32 reviews and labels) from the dataset
+text_batch, label_batch = next(iter(raw_train_ds))
+first_review, first_label = text_batch[0], label_batch[0]
+print(&quot;Review&quot;, first_review)
+print(&quot;Label&quot;, raw_train_ds.class_names[first_label])
+print(&quot;Vectorized review&quot;, vectorize_text(first_review, first_label))
+</code></pre>
+<blockquote>
+<p>Review tf.Tensor(b'Great movie - especially the music - Etta James - &quot;At Last&quot;. This speaks volumes when you have finally found that special someone.', shape=(), dtype=string) Label neg Vectorized review</p>
+<p>(&lt;tf.Tensor: shape=(1, 250), dtype=int64, numpy= array([[  86,   17,  260,    2,  222,    1,  571,   31,  229,   11, 2418,  .........]])&gt;,</p>
+<p>&lt;tf.Tensor: shape=(), dtype=int32, numpy=0&gt;)</p>
+</blockquote>
+<p>正如您在上面看到的，每个词例都被一个整数替换了。您可以通过在该层上调用 <code>.get_vocabulary()</code> 来查找每个整数对应的词例（字符串）。</p>
+<pre><code class="language-python">print(&quot;1287 ---&gt; &quot;,vectorize_layer.get_vocabulary()[1287])
+print(&quot; 313 ---&gt; &quot;,vectorize_layer.get_vocabulary()[313])
+print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
+</code></pre>
+<blockquote>
+<p>1287 ---&gt;  silent 313 ---&gt;  night Vocabulary size: 10000</p>
+</blockquote>
+<p>差不多可以训练您的模型了。作为最后的预处理步骤，将之前创建的 TextVectorization 层应用于训练数据集、验证数据集和测试数据集。</p>
+<pre><code class="language-python">train_ds = raw_train_ds.map(vectorize_text)
+val_ds = raw_val_ds.map(vectorize_text)
+test_ds = raw_test_ds.map(vectorize_text)
+</code></pre>
+<h3 id="配置数据集以提高性能">配置数据集以提高性能</h3>
+<p>以下是加载数据时应该使用的两种重要方法，以确保 I/O 不会阻塞。</p>
+<p>从磁盘加载后，<code>.cache()</code> 会将数据保存在内存中。这将确保数据集在训练模型时不会成为瓶颈。如果您的数据集太大而无法放入内存，也可以使用此方法创建高性能的磁盘缓存，这比许多小文件的读取效率更高。</p>
+<p><code>prefetch()</code> 会在训练时将数据预处理和模型执行重叠。</p>
+<p>您可以在<a href="https://tensorflow.google.cn/guide/data_performance">数据性能指南</a>中深入了解这两种方法，以及如何将数据缓存到磁盘。</p>
+<pre><code class="language-python">AUTOTUNE = tf.data.AUTOTUNE
+
+train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+</code></pre>
+<h3 id="创建模型">创建模型</h3>
+<p>是时候创建您的神经网络了：</p>
+<pre><code class="language-python">embedding_dim = 16
+</code></pre>
+<pre><code class="language-python">model = tf.keras.Sequential([
+  layers.Embedding(max_features + 1, embedding_dim),
+  layers.Dropout(0.2),
+  layers.GlobalAveragePooling1D(),
+  layers.Dropout(0.2),
+  layers.Dense(1)])
+
+model.summary()
+</code></pre>
+<p>层按顺序堆叠以构建分类器：</p>
+<ol>
+<li>第一层是<code>嵌入（Embedding）</code>层。该层采用整数编码的词汇表，并查找每个词索引的嵌入向量（embedding vector）。这些向量是通过模型训练学习到的。向量向输出数组增加了一个维度。得到的维度为：<code>(batch, sequence, embedding)</code>。</li>
+<li>接下来，<code>GlobalAveragePooling1D</code> 将通过对序列维度求平均值来为每个样本返回一个定长输出向量。这允许模型以尽可能最简单的方式处理变长输入。</li>
+<li>该定长输出向量通过一个有 16 个隐层单元的全连接（<code>Dense</code>）层传输。</li>
+<li>最后一层与单个输出结点密集连接。使用 <code>Sigmoid</code> 激活函数，其函数值为介于 0 与 1 之间的浮点数，表示概率或置信度。</li>
+</ol>
+<h3 id="损失函数与优化器">损失函数与优化器</h3>
+<p>一个模型需要损失函数和优化器来进行训练。由于这是一个二分类问题且模型输出概率值（一个使用 sigmoid 激活函数的单一单元层），我们将使用 <code>binary_crossentropy</code> 损失函数。</p>
+<p>这不是损失函数的唯一选择，例如，您可以选择 <code>mean_squared_error</code> 。但是，一般来说 <code>binary_crossentropy</code> 更适合处理概率——它能够度量概率分布之间的“距离”，或者在我们的示例中，指的是度量 ground-truth 分布与预测值之间的“距离”。</p>
+<pre><code class="language-python">model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+</code></pre>
+<h3 id="训练模型-2">训练模型</h3>
+<p>以 512 个样本的 mini-batch 大小迭代 40 个 epoch 来训练模型。这是指对 <code>x_train</code> 和 <code>y_train</code> 张量中所有样本的的 40 次迭代。在训练过程中，监测来自验证集的 10,000 个样本上的损失值（loss）和准确率（accuracy）：</p>
+<pre><code class="language-python">epochs = 10
+history = model.fit(
+    train_ds,
+    validation_data=val_ds,
+    epochs=epochs)
+</code></pre>
+<h3 id="评估模型">评估模型</h3>
+<p>我们来看一下模型的性能如何。将返回两个值。损失值（loss）（一个表示误差的数字，值越低越好）与准确率（accuracy）。</p>
+<pre><code class="language-python">loss, accuracy = model.evaluate(test_ds)
+
+print(&quot;Loss: &quot;, loss)
+print(&quot;Accuracy: &quot;, accuracy)
+</code></pre>
+<blockquote>
+<p>loss: 0.4093 - accuracy: 0.8740</p>
+<p>Loss:  0.40925541520118713</p>
+<p>Accuracy:  0.873960018157959</p>
+</blockquote>
+<p>这种十分朴素的方法得到了约 87% 的准确率（accuracy）。若采用更好的方法，模型的准确率应当接近 95%。</p>
+<h3 id="创建准确率和损失随时间变化的图表">创建准确率和损失随时间变化的图表</h3>
+<p><code>model.fit()</code> 会返回包含一个字典的 <code>History</code> 对象。该字典包含训练过程中产生的所有信息：</p>
+<pre><code class="language-python">history_dict = history.history
+history_dict.keys()
+</code></pre>
+<blockquote>
+<p>dict_keys(['loss', 'accuracy', 'val_loss', 'val_accuracy'])</p>
+</blockquote>
+<p>其中有四个条目：每个条目代表训练和验证过程中的一项监测指标。您可以使用这些指标来绘制用于比较的训练损失和验证损失图表，以及训练准确率和验证准确率图表：</p>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
+loss = history_dict['loss']
+val_loss = history_dict['val_loss']
+
+epochs = range(1, len(acc) + 1)
+
+# “bo”代表 &quot;蓝点&quot;
+plt.plot(epochs, loss, 'bo', label='Training loss')
+# b代表“蓝色实线”
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://j-j-b-b.github.io//post-images/1652611323423.png" alt="" loading="lazy"></figure>
+<pre><code class="language-python">plt.clf()   # 清除数字
+
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.show()
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://j-j-b-b.github.io//post-images/1652611316830.png" alt="" loading="lazy"></figure>
+<p>在该图中，点代表训练损失值（loss）与准确率（accuracy），实线代表验证损失值（loss）与准确率（accuracy）。</p>
+<p>注意训练损失值随每一个 epoch <em>下降</em>而训练准确率（accuracy）随每一个 epoch <em>上升</em>。这在使用梯度下降优化时是可预期的——理应在每次迭代中最小化期望值。</p>
+<p>验证过程的损失值（loss）与准确率（accuracy）的情况却并非如此——它们似乎在 20 个 epoch 后达到峰值。这是过拟合的一个实例：模型在训练数据上的表现比在以前从未见过的数据上的表现要更好。在此之后，模型过度优化并学习<em>特定</em>于训练数据的表示，而不能够<em>泛化</em>到测试数据。</p>
+<p>对于这种特殊情况，我们可以通过在 20 个左右的 epoch 后停止训练来避免过拟合。稍后，您将看到如何通过回调自动执行此操作。</p>
+<h1 id="使用-keras-和-tensorflow-hub-对电影评论进行文本分类">使用 Keras 和 Tensorflow Hub 对电影评论进行文本分类</h1>
+<h2 id="下载-imdb-数据集">下载 IMDB 数据集</h2>
+<p>IMDB数据集可以在 <a href="https://github.com/tensorflow/datasets">Tensorflow 数据集</a>处获取。以下代码将 IMDB 数据集下载至您的机器（或 colab 运行时环境）中：</p>
+<pre><code class="language-python"># Split the training set into 60% and 40% to end up with 15,000 examples
+# for training, 10,000 examples for validation and 25,000 examples for testing.
+train_data, validation_data, test_data = tfds.load(
+    name=&quot;imdb_reviews&quot;, 
+    split=('train[:60%]', 'train[60%:]', 'test'),
+    as_supervised=True)
+</code></pre>
+<h2 id="探索数据">探索数据</h2>
+<p>我们花一点时间来了解数据的格式。每个样本都是一个代表电影评论的句子和一个相应的标签。句子未经过任何预处理。标签是一个整数值（0 或 1），其中 0 表示负面评价，而 1 表示正面评价。</p>
+<p>我们来打印下前十个样本。</p>
+<pre><code class="language-python">train_examples_batch, train_labels_batch = next(iter(train_data.batch(10)))
+train_examples_batch
+</code></pre>
+<p>我们再打印下前十个标签。</p>
+<pre><code class="language-python">train_labels_batch
+</code></pre>
+<h2 id="构建模型-2">构建模型</h2>
+<p>神经网络由堆叠的层来构建，这需要从三个主要方面来进行体系结构决策：</p>
+<ul>
+<li>如何表示文本？</li>
+<li>模型里有多少层？</li>
+<li>每个层里有多少<em>隐层单元（hidden units）</em>？</li>
+</ul>
+<p>本示例中，输入数据由句子组成。预测的标签为 0 或 1。</p>
+<p>表示文本的一种方式是将句子转换为嵌入向量。使用一个预训练文本嵌入向量作为首层，这将具有三个优点：</p>
+<ul>
+<li>不必担心文本预处理</li>
+<li>可以从迁移学习中受益</li>
+<li>嵌入具有固定长度，更易于处理</li>
+</ul>
+<p>在本示例中，您使用来自 <a href="https://tfhub.dev/">TensorFlow Hub</a> 的 <strong>预训练文本嵌入向量模型</strong>，名称为 <a href="https://tfhub.dev/google/nnlm-en-dim50/2">google/nnlm-en-dim50/2</a>。</p>
+<p>本教程中还可以使用来自 TFHub 的许多其他预训练文本嵌入向量：</p>
+<ul>
+<li><a href="https://tfhub.dev/google/nnlm-en-dim128/2">google/nnlm-en-dim128/2</a> - 基于与 <a href="https://tfhub.dev/google/nnlm-en-dim50/2">google/nnlm-en-dim50/2</a> 相同的数据并使用相同的 NNLM 架构进行训练，但具有更大的嵌入向量维度。更大维度的嵌入向量可以改进您的任务，但可能需要更长的时间来训练您的模型。</li>
+<li><a href="https://tfhub.dev/google/nnlm-en-dim128-with-normalization/2">google/nnlm-en-dim128-with-normalization/2</a> - 与 <a href="https://tfhub.dev/google/nnlm-en-dim128/2">google/nnlm-en-dim128/2</a> 相同，但具有额外的文本归一化，例如移除标点符号。如果您的任务中的文本包含附加字符或标点符号，这会有所帮助。</li>
+<li><a href="https://tfhub.dev/google/universal-sentence-encoder/4">google/universal-sentence-encoder/4</a> - 一个可产生 512 维嵌入向量的更大模型，使用深度平均网络 (DAN) 编码器训练。</li>
+</ul>
+<p>还有很多！在 TFHub 上查找更多<a href="https://tfhub.dev/s?module-type=text-embedding">文本嵌入向量模型</a>。</p>
+<p>让我们首先创建一个使用 Tensorflow Hub 模型嵌入（embed）语句的Keras层，并在几个输入样本中进行尝试。请注意无论输入文本的长度如何，嵌入（embeddings）输出的形状都是：<code>(num_examples, embedding_dimension)</code>。</p>
+<pre><code class="language-python">embedding = &quot;https://tfhub.dev/google/nnlm-en-dim50/2&quot;
+hub_layer = hub.KerasLayer(embedding, input_shape=[], 
+                           dtype=tf.string, trainable=True)
+hub_layer(train_examples_batch[:3])
+</code></pre>
+<p>现在让我们构建完整模型：</p>
+<pre><code class="language-python">model = tf.keras.Sequential()
+model.add(hub_layer)
+model.add(tf.keras.layers.Dense(16, activation='relu'))
+model.add(tf.keras.layers.Dense(1))
+
+model.summary()
+</code></pre>
+<p>层按顺序堆叠以构建分类器：</p>
+<ol>
+<li>第一层是 TensorFlow Hub 层。此层使用预训练的 SaveModel 将句子映射到其嵌入向量。您使用的预训练文本嵌入向量模型 (<a href="https://tfhub.dev/google/nnlm-en-dim50/2">google/nnlm-en-dim50/2</a>) 可将句子拆分为词例，嵌入每个词例，然后组合嵌入向量。生成的维度是：<code>(num_examples, embedding_dimension)</code>。对于此 NNLM 模型，<code>embedding_dimension</code> 是 50。</li>
+<li>该定长输出向量通过一个有 16 个隐层单元的全连接层（<code>Dense</code>）进行管道传输。</li>
+<li>最后一层与单个输出结点紧密相连。使用 <code>Sigmoid</code> 激活函数，其函数值为介于 0 与 1 之间的浮点数，表示概率或置信水平。</li>
+</ol>
+<p>让我们编译模型。</p>
+<h3 id="损失函数与优化器-2">损失函数与优化器</h3>
+<p>一个模型需要一个损失函数和一个优化器来训练。由于这是一个二元分类问题，并且模型输出 logit（具有线性激活的单一单元层），因此，我们将使用 <code>binary_crossentropy</code> 损失函数。</p>
+<p>这并非损失函数的唯一选择，例如，您还可以选择 <code>mean_squared_error</code>。但是，一般来说，<code>binary_crossentropy</code> 更适合处理概率问题，它可以测量概率分布之间的“距离”，或者在我们的用例中，是指真实分布与预测值之间的差距。</p>
+<p>稍后，当您探索回归问题（例如，预测房屋价格）时，您将看到如何使用另一个称为均方误差的损失函数。</p>
+<p>现在，配置模型来使用优化器和损失函数：</p>
+<pre><code class="language-python">model.compile(optimizer='adam',
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+</code></pre>
+<h2 id="训练模型-3">训练模型</h2>
+<p>使用包含 512 个样本的 mini-batch 对模型进行 10 个周期的训练，也就是在 <code>x_train</code> 和 <code>y_train</code> 张量中对所有样本进行 10 次迭代。在训练时，监测模型在验证集的 10,000 个样本上的损失和准确率：</p>
+<pre><code class="language-python">history = model.fit(train_data.shuffle(10000).batch(512),
+                    epochs=10,
+                    validation_data=validation_data.batch(512),
+                    verbose=1)
+</code></pre>
+<h2 id="评估模型-2">评估模型</h2>
+<p>我们来看下模型的表现如何。将返回两个值。损失值（loss）（一个表示误差的数字，值越低越好）与准确率（accuracy）。</p>
+<pre><code class="language-python">results = model.evaluate(test_data.batch(512), verbose=2)
+
+for name, value in zip(model.metrics_names, results):
+  print(&quot;%s: %.3f&quot; % (name, value))
+</code></pre>
+<blockquote>
+<p>49/49 - 2s - loss: 0.3661 - accuracy: 0.8526<br>
+loss: 0.366<br>
+accuracy: 0.853</p>
+</blockquote>
+<p>这种十分朴素的方法得到了约 87% 的准确率（accuracy）。若采用更好的方法，模型的准确率应当接近 95%。</p>
+<h2 id="进一步阅读">进一步阅读</h2>
+<ul>
+<li>有关处理字符串输入的更通用方式以及对训练过程中准确率和损失进度的更详细分析，请参阅<a href="https://www.tensorflow.org/tutorials/keras/text_classification">使用预处理文本的文本分类</a>教程。</li>
+<li>尝试更多使用来自 TFHub 的训练模型的<a href="https://tensorflow.google.cn/hub/tutorials#text-related-tutorials">文本相关教程</a>。</li>
+</ul>
+<h1 id="基本回归预测燃油效率">基本回归：预测燃油效率</h1>
+<p>在 <em>回归 (regression)</em> 问题中，我们的目的是预测出如价格或概率这样连续值的输出。相对于<em>分类(classification)</em> 问题，<em>分类(classification)</em> 的目的是从一系列的分类出选择出一个分类 （如，给出一张包含苹果或橘子的图片，识别出图片中是哪种水果）。</p>
+<p>本 notebook 使用经典的 <a href="https://archive.ics.uci.edu/ml/datasets/auto+mpg">Auto MPG</a> 数据集，构建了一个用来预测70年代末到80年代初汽车燃油效率的模型。为了做到这一点，我们将为该模型提供许多那个时期的汽车描述。这个描述包含：气缸数，排量，马力以及重量。</p>
+<p>本示例使用 <code>tf.keras</code> API，相关细节请参阅 <a href="https://tensorflow.google.cn/guide/keras">本指南</a>。</p>
+<pre><code># 使用 seaborn 绘制矩阵图 (pairplot)
+pip install -q seaborn
+</code></pre>
+<pre><code class="language-python">import pathlib
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+import tensorflow as tf
+
+from tensorflow import keras
+from tensorflow.keras import layers
+
+print(tf.__version__)
+</code></pre>
+<blockquote>
+<p>2.3.0</p>
+</blockquote>
+<h2 id="auto-mpg-数据集">Auto MPG 数据集</h2>
+<p>该数据集可以从 <a href="https://archive.ics.uci.edu/ml/">UCI机器学习库</a> 中获取.</p>
+<h3 id="获取数据">获取数据</h3>
+<p>首先下载数据集。</p>
+<pre><code class="language-python">dataset_path = keras.utils.get_file(&quot;auto-mpg.data&quot;, &quot;http://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data&quot;)
+dataset_path
+</code></pre>
+<p>使用 pandas 导入数据集。</p>
+<pre><code class="language-python">column_names = ['MPG','Cylinders','Displacement','Horsepower','Weight',
+                'Acceleration', 'Model Year', 'Origin']
+raw_dataset = pd.read_csv(dataset_path, names=column_names,
+                      na_values = &quot;?&quot;, comment='\t',
+                      sep=&quot; &quot;, skipinitialspace=True)
+
+dataset = raw_dataset.copy()
+dataset.tail()
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">MPG</th>
+<th style="text-align:right">Cylinders</th>
+<th style="text-align:right">Displacement</th>
+<th style="text-align:right">Horsepower</th>
+<th style="text-align:right">Weight</th>
+<th style="text-align:right">Acceleration</th>
+<th style="text-align:right">Model Year</th>
+<th>Origin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">393</td>
+<td style="text-align:right">27.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">140.0</td>
+<td style="text-align:right">86.0</td>
+<td style="text-align:right">2790.0</td>
+<td style="text-align:right">15.6</td>
+<td style="text-align:right">82</td>
+<td>1</td>
+</tr>
+<tr>
+<td style="text-align:left">394</td>
+<td style="text-align:right">44.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">97.0</td>
+<td style="text-align:right">52.0</td>
+<td style="text-align:right">2130.0</td>
+<td style="text-align:right">24.6</td>
+<td style="text-align:right">82</td>
+<td>2</td>
+</tr>
+<tr>
+<td style="text-align:left">395</td>
+<td style="text-align:right">32.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">135.0</td>
+<td style="text-align:right">84.0</td>
+<td style="text-align:right">2295.0</td>
+<td style="text-align:right">11.6</td>
+<td style="text-align:right">82</td>
+<td>1</td>
+</tr>
+<tr>
+<td style="text-align:left">396</td>
+<td style="text-align:right">28.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">120.0</td>
+<td style="text-align:right">79.0</td>
+<td style="text-align:right">2625.0</td>
+<td style="text-align:right">18.6</td>
+<td style="text-align:right">82</td>
+<td>1</td>
+</tr>
+<tr>
+<td style="text-align:left">397</td>
+<td style="text-align:right">31.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">119.0</td>
+<td style="text-align:right">82.0</td>
+<td style="text-align:right">2720.0</td>
+<td style="text-align:right">19.4</td>
+<td style="text-align:right">82</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="数据清洗">数据清洗</h3>
+<p>数据集中包括一些未知值。</p>
+<pre><code class="language-python">dataset.isna().sum()
+</code></pre>
+<blockquote>
+<p>MPG                    0<br>
+Cylinders            0<br>
+Displacement    0<br>
+Horsepower       6<br>
+Weight                0<br>
+Acceleration       0<br>
+Model Year         0<br>
+Origin                 0<br>
+dtype: int64</p>
+</blockquote>
+<p>为了保证这个初始示例的简单性，删除这些行。</p>
+<pre><code class="language-python">dataset = dataset.dropna()
+</code></pre>
+<p><code>&quot;Origin&quot;</code> 列实际上代表分类，而不仅仅是一个数字。所以把它转换为独热码 （one-hot）:</p>
+<pre><code class="language-python">origin = dataset.pop('Origin')
+dataset['USA'] = (origin == 1)*1.0
+dataset['Europe'] = (origin == 2)*1.0
+dataset['Japan'] = (origin == 3)*1.0
+dataset.tail()
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">MPG</th>
+<th style="text-align:right">Cylinders</th>
+<th style="text-align:right">Displacement</th>
+<th style="text-align:right">Horsepower</th>
+<th style="text-align:right">Weight</th>
+<th style="text-align:right">Acceleration</th>
+<th style="text-align:right">Model Year</th>
+<th style="text-align:right">USA</th>
+<th style="text-align:right">Europe</th>
+<th>Japan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">393</td>
+<td style="text-align:right">27.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">140.0</td>
+<td style="text-align:right">86.0</td>
+<td style="text-align:right">2790.0</td>
+<td style="text-align:right">15.6</td>
+<td style="text-align:right">82</td>
+<td style="text-align:right">1.0</td>
+<td style="text-align:right">0.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td style="text-align:left">394</td>
+<td style="text-align:right">44.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">97.0</td>
+<td style="text-align:right">52.0</td>
+<td style="text-align:right">2130.0</td>
+<td style="text-align:right">24.6</td>
+<td style="text-align:right">82</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">1.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td style="text-align:left">395</td>
+<td style="text-align:right">32.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">135.0</td>
+<td style="text-align:right">84.0</td>
+<td style="text-align:right">2295.0</td>
+<td style="text-align:right">11.6</td>
+<td style="text-align:right">82</td>
+<td style="text-align:right">1.0</td>
+<td style="text-align:right">0.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td style="text-align:left">396</td>
+<td style="text-align:right">28.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">120.0</td>
+<td style="text-align:right">79.0</td>
+<td style="text-align:right">2625.0</td>
+<td style="text-align:right">18.6</td>
+<td style="text-align:right">82</td>
+<td style="text-align:right">1.0</td>
+<td style="text-align:right">0.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td style="text-align:left">397</td>
+<td style="text-align:right">31.0</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">119.0</td>
+<td style="text-align:right">82.0</td>
+<td style="text-align:right">2720.0</td>
+<td style="text-align:right">19.4</td>
+<td style="text-align:right">82</td>
+<td style="text-align:right">1.0</td>
+<td style="text-align:right">0.0</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="拆分训练数据集和测试数据集">拆分训练数据集和测试数据集</h3>
+<p>现在需要将数据集拆分为一个训练数据集和一个测试数据集。</p>
+<p>我们最后将使用测试数据集对模型进行评估。</p>
+<pre><code class="language-python">train_dataset = dataset.sample(frac=0.8,random_state=0)
+test_dataset = dataset.drop(train_dataset.index)
+</code></pre>
+<h3 id="数据检查">数据检查</h3>
+<p>快速查看训练集中几对列的联合分布。</p>
+<pre><code class="language-python">sns.pairplot(train_dataset[[&quot;MPG&quot;, &quot;Cylinders&quot;, &quot;Displacement&quot;, &quot;Weight&quot;]], diag_kind=&quot;kde&quot;)
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://j-j-b-b.github.io//post-images/1652611288602.png" alt="" loading="lazy"></figure>
+<p>也可以查看总体的数据统计:</p>
+<pre><code class="language-python">train_stats = train_dataset.describe()
+train_stats.pop(&quot;MPG&quot;)
+train_stats = train_stats.transpose()
+train_stats
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">count</th>
+<th style="text-align:right">mean</th>
+<th style="text-align:right">std</th>
+<th style="text-align:right">min</th>
+<th style="text-align:right">25%</th>
+<th style="text-align:right">50%</th>
+<th style="text-align:right">75%</th>
+<th>max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Cylinders</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">5.477707</td>
+<td style="text-align:right">1.699788</td>
+<td style="text-align:right">3.0</td>
+<td style="text-align:right">4.00</td>
+<td style="text-align:right">4.0</td>
+<td style="text-align:right">8.00</td>
+<td>8.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Displacement</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">195.318471</td>
+<td style="text-align:right">104.331589</td>
+<td style="text-align:right">68.0</td>
+<td style="text-align:right">105.50</td>
+<td style="text-align:right">151.0</td>
+<td style="text-align:right">265.75</td>
+<td>455.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Horsepower</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">104.869427</td>
+<td style="text-align:right">38.096214</td>
+<td style="text-align:right">46.0</td>
+<td style="text-align:right">76.25</td>
+<td style="text-align:right">94.5</td>
+<td style="text-align:right">128.00</td>
+<td>225.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Weight</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">2990.251592</td>
+<td style="text-align:right">843.898596</td>
+<td style="text-align:right">1649.0</td>
+<td style="text-align:right">2256.50</td>
+<td style="text-align:right">2822.5</td>
+<td style="text-align:right">3608.00</td>
+<td>5140.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Acceleration</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">15.559236</td>
+<td style="text-align:right">2.789230</td>
+<td style="text-align:right">8.0</td>
+<td style="text-align:right">13.80</td>
+<td style="text-align:right">15.5</td>
+<td style="text-align:right">17.20</td>
+<td>24.8</td>
+</tr>
+<tr>
+<td style="text-align:left">Model Year</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">75.898089</td>
+<td style="text-align:right">3.675642</td>
+<td style="text-align:right">70.0</td>
+<td style="text-align:right">73.00</td>
+<td style="text-align:right">76.0</td>
+<td style="text-align:right">79.00</td>
+<td>82.0</td>
+</tr>
+<tr>
+<td style="text-align:left">USA</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">0.624204</td>
+<td style="text-align:right">0.485101</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">0.00</td>
+<td style="text-align:right">1.0</td>
+<td style="text-align:right">1.00</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Europe</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">0.178344</td>
+<td style="text-align:right">0.383413</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">0.00</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">0.00</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td style="text-align:left">Japan</td>
+<td style="text-align:right">314.0</td>
+<td style="text-align:right">0.197452</td>
+<td style="text-align:right">0.398712</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">0.00</td>
+<td style="text-align:right">0.0</td>
+<td style="text-align:right">0.00</td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="从标签中分离特征">从标签中分离特征</h3>
+<p>将特征值从目标值或者&quot;标签&quot;中分离。 这个标签是你使用训练模型进行预测的值。</p>
+<pre><code class="language-python">train_labels = train_dataset.pop('MPG')
+test_labels = test_dataset.pop('MPG')
+</code></pre>
+<h3 id="数据规范化">数据规范化</h3>
+<p>再次审视下上面的 <code>train_stats</code> 部分，并注意每个特征的范围有什么不同。</p>
+<p>使用不同的尺度和范围对特征归一化是好的实践。尽管模型<em>可能</em> 在没有特征归一化的情况下收敛，它会使得模型训练更加复杂，并会造成生成的模型依赖输入所使用的单位选择。</p>
+<p>注意：尽管我们仅仅从训练集中有意生成这些统计数据，但是这些统计信息也会用于归一化的测试数据集。我们需要这样做，将测试数据集放入到与已经训练过的模型相同的分布中。</p>
+<pre><code class="language-python">def norm(x):
+  return (x - train_stats['mean']) / train_stats['std']
+normed_train_data = norm(train_dataset)
+normed_test_data = norm(test_dataset)
+</code></pre>
+<p>我们将会使用这个已经归一化的数据来训练模型。</p>
+<p>警告: 用于归一化输入的数据统计（均值和标准差）需要反馈给模型从而应用于任何其他数据，以及我们之前所获得独热码。这些数据包含测试数据集以及生产环境中所使用的实时数据。</p>
+<h2 id="模型">模型</h2>
+<h3 id="构建模型-3">构建模型</h3>
+<p>让我们来构建我们自己的模型。这里，我们将会使用一个“顺序”模型，其中包含两个紧密相连的隐藏层，以及返回单个、连续值得输出层。模型的构建步骤包含于一个名叫 'build_model' 的函数中，稍后我们将会创建第二个模型。 两个密集连接的隐藏层。</p>
+<pre><code class="language-python">def build_model():
+  model = keras.Sequential([
+    layers.Dense(64, activation='relu', input_shape=[len(train_dataset.keys())]),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(1)
+  ])
+
+  optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+  model.compile(loss='mse',
+                optimizer=optimizer,
+                metrics=['mae', 'mse'])
+  return model
+model = build_model()
+</code></pre>
+<h3 id="检查模型">检查模型</h3>
+<p>使用 <code>.summary</code> 方法来打印该模型的简单描述。</p>
+<pre><code class="language-python">model.summary()
+</code></pre>
+<p>现在试用下这个模型。从训练数据中批量获取‘10’条例子并对这些例子调用 <code>model.predict</code> 。</p>
+<pre><code class="language-python">example_batch = normed_train_data[:10]
+example_result = model.predict(example_batch)
+example_result
+</code></pre>
+<blockquote>
+<p>array([[0.15074062],<br>
+[0.0973136 ],<br>
+[0.17310914],<br>
+[0.08873479],<br>
+[0.52456   ],<br>
+[0.05311462],<br>
+[0.49406645],<br>
+[0.04333409],<br>
+[0.12005241],<br>
+[0.6703117 ]], dtype=float32)</p>
+</blockquote>
+<p>它似乎在工作，并产生了预期的形状和类型的结果</p>
+<h3 id="训练模型-4">训练模型</h3>
+<p>对模型进行1000个周期的训练，并在 <code>history</code> 对象中记录训练和验证的准确性。</p>
+<pre><code class="language-python"># 通过为每个完成的时期打印一个点来显示训练进度
+class PrintDot(keras.callbacks.Callback):
+  def on_epoch_end(self, epoch, logs):
+    if epoch % 100 == 0: print('')
+    print('.', end='')
+
+EPOCHS = 1000
+
+history = model.fit(
+  normed_train_data, train_labels,
+  epochs=EPOCHS, validation_split = 0.2, verbose=0,
+  callbacks=[PrintDot()])
+</code></pre>
+<p>使用 <code>history</code> 对象中存储的统计信息可视化模型的训练进度。</p>
+<pre><code class="language-python">hist = pd.DataFrame(history.history)
+hist['epoch'] = history.epoch
+hist.tail()
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:right">loss</th>
+<th style="text-align:right">mae</th>
+<th style="text-align:right">mse</th>
+<th style="text-align:right">val_loss</th>
+<th style="text-align:right">val_mae</th>
+<th style="text-align:right">val_mse</th>
+<th>epoch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">995</td>
+<td style="text-align:right">2.570732</td>
+<td style="text-align:right">1.051618</td>
+<td style="text-align:right">2.570732</td>
+<td style="text-align:right">10.587498</td>
+<td style="text-align:right">2.456362</td>
+<td style="text-align:right">10.587498</td>
+<td>995</td>
+</tr>
+<tr>
+<td style="text-align:left">996</td>
+<td style="text-align:right">2.660562</td>
+<td style="text-align:right">1.022598</td>
+<td style="text-align:right">2.660562</td>
+<td style="text-align:right">10.711611</td>
+<td style="text-align:right">2.428715</td>
+<td style="text-align:right">10.711611</td>
+<td>996</td>
+</tr>
+<tr>
+<td style="text-align:left">997</td>
+<td style="text-align:right">3.080793</td>
+<td style="text-align:right">1.141696</td>
+<td style="text-align:right">3.080793</td>
+<td style="text-align:right">10.469919</td>
+<td style="text-align:right">2.439384</td>
+<td style="text-align:right">10.469919</td>
+<td>997</td>
+</tr>
+<tr>
+<td style="text-align:left">998</td>
+<td style="text-align:right">2.729193</td>
+<td style="text-align:right">1.066712</td>
+<td style="text-align:right">2.729193</td>
+<td style="text-align:right">10.671435</td>
+<td style="text-align:right">2.500411</td>
+<td style="text-align:right">10.671435</td>
+<td>998</td>
+</tr>
+<tr>
+<td style="text-align:left">999</td>
+<td style="text-align:right">2.847594</td>
+<td style="text-align:right">1.041974</td>
+<td style="text-align:right">2.847594</td>
+<td style="text-align:right">10.892761</td>
+<td style="text-align:right">2.450137</td>
+<td style="text-align:right">10.892761</td>
+<td>999</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">def plot_history(history):
+  hist = pd.DataFrame(history.history)
+  hist['epoch'] = history.epoch
+
+  plt.figure()
+  plt.xlabel('Epoch')
+  plt.ylabel('Mean Abs Error [MPG]')
+  plt.plot(hist['epoch'], hist['mae'],
+           label='Train Error')
+  plt.plot(hist['epoch'], hist['val_mae'],
+           label = 'Val Error')
+  plt.ylim([0,5])
+  plt.legend()
+
+  plt.figure()
+  plt.xlabel('Epoch')
+  plt.ylabel('Mean Square Error [$MPG^2$]')
+  plt.plot(hist['epoch'], hist['mse'],
+           label='Train Error')
+  plt.plot(hist['epoch'], hist['val_mse'],
+           label = 'Val Error')
+  plt.ylim([0,20])
+  plt.legend()
+  plt.show()
+
+
+plot_history(history)
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://j-j-b-b.github.io//post-images/1652611265569.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://j-j-b-b.github.io//post-images/1652611258188.png" alt="" loading="lazy"></figure>
+<p>该图表显示在约100个 epochs 之后误差非但没有改进，反而出现恶化。 让我们更新 <code>model.fit</code> 调用，当验证值没有提高上是自动停止训练。 我们将使用一个 <em>EarlyStopping callback</em> 来测试每个 epoch 的训练条件。如果经过一定数量的 epochs 后没有改进，则自动停止训练。</p>
+<p>你可以从<a href="https://tensorflow.google.cn/versions/master/api_docs/python/tf/keras/callbacks/EarlyStopping">这里</a>学习到更多的回调。</p>
+<pre><code class="language-python">model = build_model()
+
+# patience 值用来检查改进 epochs 的数量
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+
+history = model.fit(normed_train_data, train_labels, epochs=EPOCHS,
+                    validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
+
+plot_history(history)
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://j-j-b-b.github.io//post-images/1652611242497.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://j-j-b-b.github.io//post-images/1652611232262.png" alt="" loading="lazy"></figure>
+<p>如图所示，验证集中的平均的误差通常在 +/- 2 MPG左右。 这个结果好么？ 我们将决定权留给你。</p>
+<p>让我们看看通过使用 <strong>测试集</strong> 来泛化模型的效果如何，我们在训练模型时没有使用测试集。这告诉我们，当我们在现实世界中使用这个模型时，我们可以期望它预测得有多好。</p>
+<pre><code class="language-python">loss, mae, mse = model.evaluate(normed_test_data, test_labels, verbose=2)
+
+print(&quot;Testing set Mean Abs Error: {:5.2f} MPG&quot;.format(mae))
+</code></pre>
+<h3 id="做预测">做预测</h3>
+<p>最后，使用测试集中的数据预测 MPG 值:</p>
+<pre><code class="language-python">test_predictions = model.predict(normed_test_data).flatten()
+
+plt.scatter(test_labels, test_predictions)
+plt.xlabel('True Values [MPG]')
+plt.ylabel('Predictions [MPG]')
+plt.axis('equal')
+plt.axis('square')
+plt.xlim([0,plt.xlim()[1]])
+plt.ylim([0,plt.ylim()[1]])
+_ = plt.plot([-100, 100], [-100, 100])
+</code></pre>
+<p><img src="https://j-j-b-b.github.io//post-images/1652611212370.png" alt="" loading="lazy">!</p>
+<p>这看起来我们的模型预测得相当好。我们来看下误差分布。</p>
+<pre><code class="language-python">error = test_predictions - test_labels
+plt.hist(error, bins = 25)
+plt.xlabel(&quot;Prediction Error [MPG]&quot;)
+_ = plt.ylabel(&quot;Count&quot;)
+</code></pre>
+<figure data-type="image" tabindex="14"><img src="https://j-j-b-b.github.io//post-images/1652611204278.png" alt="" loading="lazy"></figure>
+<p>它不是完全的高斯分布，但我们可以推断出，这是因为样本的数量很小所导致的。</p>
+<h2 id="结论">结论</h2>
+<p>本笔记本 (notebook) 介绍了一些处理回归问题的技术。</p>
+<ul>
+<li>均方误差（MSE）是用于回归问题的常见损失函数（分类问题中使用不同的损失函数）。</li>
+<li>类似的，用于回归的评估指标与分类不同。 常见的回归指标是平均绝对误差（MAE）。</li>
+<li>当数字输入数据特征的值存在不同范围时，每个特征应独立缩放到相同范围。</li>
+<li>如果训练数据不多，一种方法是选择隐藏层较少的小网络，以避免过度拟合。</li>
+<li>早期停止是一种防止过度拟合的有效技术。</li>
+</ul>
 ]]></content>
     </entry>
     <entry>
